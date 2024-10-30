@@ -21,10 +21,10 @@ class QuizTimer(QWidget):
         super().__init__()
 
         self.initUI()
-        self.time_per_question = 0
+        self.time_per_question_seconds = 0
         self.remaining_time = 0
         self.answered_questions = 0
-        self.total_saved_time = 0
+        self.total_saved_time_seconds = 0  # Changed to track saved time in seconds
 
     def initUI(self):
         # Set window properties
@@ -82,10 +82,14 @@ class QuizTimer(QWidget):
         self.timer_display.setStyleSheet("color: #ffffff;")
 
         # Display for time saved and time per question
-        self.time_per_question_label = QLabel("Time per question: 0 minutes")
+        self.time_per_question_label = QLabel(
+            "Time per question: 0 minutes and 0 seconds"
+        )
         self.time_per_question_label.setFont(QFont("Arial", 10))
         self.time_per_question_label.setStyleSheet("color: #ffffff;")
-        self.saved_time_label = QLabel("Saved time: 0 minutes")
+        self.saved_time_label = QLabel(
+            "Saved time: 0 minutes and 0 seconds"
+        )  # Updated to reflect new format
         self.saved_time_label.setFont(QFont("Arial", 10))
         self.saved_time_label.setStyleSheet("color: #ffffff;")
 
@@ -121,9 +125,12 @@ class QuizTimer(QWidget):
         total_questions = self.question_count_input.value()
         total_time = self.time_input.value()
 
-        self.time_per_question = total_time / total_questions
+        # Calculate time per question in seconds
+        self.time_per_question_seconds = (total_time * 60) / total_questions
+        minutes_per_question = int(self.time_per_question_seconds // 60)
+        seconds_per_question = int(self.time_per_question_seconds % 60)
         self.time_per_question_label.setText(
-            f"Time per question: {self.time_per_question:.2f} minutes"
+            f"Time per question: {minutes_per_question} minutes and {seconds_per_question} seconds"
         )
 
         # Calculate countdown time in seconds
@@ -147,22 +154,25 @@ class QuizTimer(QWidget):
     def update_display(self):
         minutes = self.remaining_time // 60
         seconds = self.remaining_time % 60
-        self.timer_display.setText(f"{minutes:02}:{seconds:02}")
+        self.timer_display.setText(f"{minutes} minutes and {seconds} seconds")
 
     def answer_question(self):
         # Time per question in seconds
-        question_time = self.time_per_question * 60
+        question_time = self.time_per_question_seconds
 
         # Save time if answered quicker
-        saved_time = (
-            question_time
-            - (self.time_input.value() * 60 - self.remaining_time) % question_time
+        saved_time = question_time - (
+            (self.time_input.value() * 60 - self.remaining_time) % question_time
         )
         if saved_time > 0:
-            self.total_saved_time += saved_time / 60  # Convert to minutes
-            self.saved_time_label.setText(
-                f"Saved time: {self.total_saved_time:.2f} minutes"
+            self.total_saved_time_seconds += (
+                saved_time  # Keep track of saved time in seconds
             )
+            saved_minutes = int(self.total_saved_time_seconds // 60)
+            saved_seconds = int(self.total_saved_time_seconds % 60)
+            self.saved_time_label.setText(
+                f"Saved time: {saved_minutes} minutes and {saved_seconds} seconds"
+            )  # Update format
 
         # Count answered questions
         self.answered_questions += 1
