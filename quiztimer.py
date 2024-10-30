@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import (
     QSpinBox,
     QPushButton,
     QVBoxLayout,
+    QHBoxLayout,
 )
 from PyQt6.QtCore import QTimer
 
@@ -32,38 +33,42 @@ class QuizTimer(QWidget):
         self.total_saved_time = 0
 
     def initUI(self):
-        # Eingabefelder für Anzahl der Fragen und Zeit in Minuten
-        self.question_label = QLabel("Anzahl der Fragen:")
+        # Layouts for question count and time
+        question_layout = QHBoxLayout()
+        self.question_label = QLabel("Number of questions:")
         self.question_count_input = QSpinBox()
         self.question_count_input.setRange(1, 100)
+        question_layout.addWidget(self.question_label)
+        question_layout.addWidget(self.question_count_input)
 
-        self.time_label = QLabel("Zeit in Minuten:")
+        time_layout = QHBoxLayout()
+        self.time_label = QLabel("Time in minutes:")
         self.time_input = QSpinBox()
         self.time_input.setRange(1, 999)
+        time_layout.addWidget(self.time_label)
+        time_layout.addWidget(self.time_input)
 
-        # Button für den Start des Countdowns
+        # Button to start the countdown
         self.start_button = QPushButton("Start")
         self.start_button.clicked.connect(self.start_quiz)
 
-        # Countdown-Label
-        self.timer_label = QLabel("Verbleibende Zeit:")
+        # Countdown label
+        self.timer_label = QLabel("Remaining time:")
         self.timer_display = QLabel("00:00")
 
-        # Anzeige für gewonnene Zeit und Zeit pro Frage
-        self.time_per_question_label = QLabel("Zeit pro Frage: 0 Minuten")
-        self.saved_time_label = QLabel("Gewonnene Zeit: 0 Minuten")
+        # Display for time saved and time per question
+        self.time_per_question_label = QLabel("Time per question: 0 minutes")
+        self.saved_time_label = QLabel("Saved time: 0 minutes")
 
-        # Button für beantwortete Fragen
-        self.answer_button = QPushButton("Frage beantwortet")
+        # Button for answered questions
+        self.answer_button = QPushButton("Question answered")
         self.answer_button.clicked.connect(self.answer_question)
         self.answer_button.setEnabled(False)
 
-        # Layout
+        # Main layout
         layout = QVBoxLayout()
-        layout.addWidget(self.question_label)
-        layout.addWidget(self.question_count_input)
-        layout.addWidget(self.time_label)
-        layout.addWidget(self.time_input)
+        layout.addLayout(question_layout)
+        layout.addLayout(time_layout)
         layout.addWidget(self.start_button)
         layout.addWidget(self.timer_label)
         layout.addWidget(self.timer_display)
@@ -79,21 +84,21 @@ class QuizTimer(QWidget):
         self.timer.timeout.connect(self.update_timer)
 
     def start_quiz(self):
-        # Zeit und Fragenanzahl setzen
+        # Set time and question count
         total_questions = self.question_count_input.value()
         total_time = self.time_input.value()
 
         self.time_per_question = total_time / total_questions
         self.time_per_question_label.setText(
-            f"Zeit pro Frage: {self.time_per_question:.2f} Minuten"
+            f"Time per question: {self.time_per_question:.2f} minutes"
         )
 
-        # Countdown-Zeit in Sekunden berechnen
+        # Calculate countdown time in seconds
         self.remaining_time = total_time * 60
         self.update_display()
 
-        # Timer starten
-        self.timer.start(1000)  # 1 Sekunde Intervall
+        # Start timer
+        self.timer.start(1000)  # 1 second interval
         self.start_button.setEnabled(False)
         self.answer_button.setEnabled(True)
 
@@ -103,7 +108,7 @@ class QuizTimer(QWidget):
             self.update_display()
         else:
             self.timer.stop()
-            self.timer_display.setText("Zeit abgelaufen!")
+            self.timer_display.setText("Time's up!")
             self.answer_button.setEnabled(False)
 
     def update_display(self):
@@ -112,25 +117,25 @@ class QuizTimer(QWidget):
         self.timer_display.setText(f"{minutes:02}:{seconds:02}")
 
     def answer_question(self):
-        # Zeit pro Frage in Sekunden
+        # Time per question in seconds
         question_time = self.time_per_question * 60
 
-        # Zeit sparen, wenn schneller beantwortet
+        # Save time if answered quicker
         saved_time = (
             question_time
             - (self.time_input.value() * 60 - self.remaining_time) % question_time
         )
         if saved_time > 0:
-            self.total_saved_time += saved_time / 60  # In Minuten umrechnen
+            self.total_saved_time += saved_time / 60  # Convert to minutes
             self.saved_time_label.setText(
-                f"Gewonnene Zeit: {self.total_saved_time:.2f} Minuten"
+                f"Saved time: {self.total_saved_time:.2f} minutes"
             )
 
-        # Beantwortete Fragen zählen
+        # Count answered questions
         self.answered_questions += 1
         if self.answered_questions >= self.question_count_input.value():
             self.timer.stop()
-            self.timer_display.setText("Quiz beendet")
+            self.timer_display.setText("Quiz completed")
             self.answer_button.setEnabled(False)
 
 
