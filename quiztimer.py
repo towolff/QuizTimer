@@ -1,12 +1,5 @@
 """
-This code is fully generated with ChatGPT with the following prompt (german):
-'Erstelle mir eine GUI in pyQt bei der man zunächst eine Anzahl an Fragen sowie eine Zeit definieren kann. 
-Man kann auf Start drücken, sodass dann der Countdown basierend auf der eingegebenen Zeit runterläuft. 
-Basierend auf der Anzahl der Fragen und der definierten Zeit soll angezeigt werden, 
-wie viel Minuten man pro Frage zeit hat (also Zeit/Anzahl Fragen). Es soll einen Button geben, 
-mit dem man sagen kann, dass man eine Frage beantwortet hat. In einem weiteren Feld soll dann angezeigt werden, 
-wie viel Zeit man gewonnen hat, wenn man also 30 Fragen und 60 Minuten hat, hat man 2 Minuten pro Frage Zeit. 
-Wenn man eine Frage in nur einer Minute beantwortet, hat man eine Minute gewonnen. Dies soll angezeigt werden.'
+This code is fully generated with ChatGPT.
 """
 
 import sys
@@ -19,7 +12,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
 )
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtGui import QFont, QColor, QPalette
 
 
 class QuizTimer(QWidget):
@@ -33,16 +27,39 @@ class QuizTimer(QWidget):
         self.total_saved_time = 0
 
     def initUI(self):
-        # Layouts for question count and time
+        # Set window properties
+        self.setWindowTitle("Quiz Timer")
+        self.setFixedSize(400, 300)
+
+        # Set dark background color
+        palette = self.palette()
+        palette.setColor(
+            QPalette.ColorRole.Window, QColor("#2c2f33")
+        )  # Dark background color
+        palette.setColor(
+            QPalette.ColorRole.WindowText, QColor("#ffffff")
+        )  # White text color
+        self.setPalette(palette)
+
+        # Set font styles
+        header_font = QFont("Arial", 12, QFont.Weight.Bold)
+        countdown_font = QFont("Arial", 24, QFont.Weight.Bold)
+
+        # Layout for question count
         question_layout = QHBoxLayout()
         self.question_label = QLabel("Number of questions:")
+        self.question_label.setFont(header_font)
+        self.question_label.setStyleSheet("color: #ffffff;")  # White text color
         self.question_count_input = QSpinBox()
         self.question_count_input.setRange(1, 100)
         question_layout.addWidget(self.question_label)
         question_layout.addWidget(self.question_count_input)
 
+        # Layout for time input
         time_layout = QHBoxLayout()
         self.time_label = QLabel("Time in minutes:")
+        self.time_label.setFont(header_font)
+        self.time_label.setStyleSheet("color: #ffffff;")  # White text color
         self.time_input = QSpinBox()
         self.time_input.setRange(1, 999)
         time_layout.addWidget(self.time_label)
@@ -50,23 +67,40 @@ class QuizTimer(QWidget):
 
         # Button to start the countdown
         self.start_button = QPushButton("Start")
+        self.start_button.setStyleSheet(
+            "background-color: #7289da; color: white; padding: 5px; font-size: 12px;"
+        )
         self.start_button.clicked.connect(self.start_quiz)
 
         # Countdown label
         self.timer_label = QLabel("Remaining time:")
+        self.timer_label.setFont(header_font)
+        self.timer_label.setStyleSheet("color: #ffffff;")
         self.timer_display = QLabel("00:00")
+        self.timer_display.setFont(countdown_font)
+        self.timer_display.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.timer_display.setStyleSheet("color: #ffffff;")
 
         # Display for time saved and time per question
         self.time_per_question_label = QLabel("Time per question: 0 minutes")
+        self.time_per_question_label.setFont(QFont("Arial", 10))
+        self.time_per_question_label.setStyleSheet("color: #ffffff;")
         self.saved_time_label = QLabel("Saved time: 0 minutes")
+        self.saved_time_label.setFont(QFont("Arial", 10))
+        self.saved_time_label.setStyleSheet("color: #ffffff;")
 
         # Button for answered questions
         self.answer_button = QPushButton("Question answered")
+        self.answer_button.setStyleSheet(
+            "background-color: #f04747; color: white; padding: 5px; font-size: 12px;"
+        )
         self.answer_button.clicked.connect(self.answer_question)
         self.answer_button.setEnabled(False)
 
         # Main layout
         layout = QVBoxLayout()
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(10)
         layout.addLayout(question_layout)
         layout.addLayout(time_layout)
         layout.addWidget(self.start_button)
@@ -77,7 +111,6 @@ class QuizTimer(QWidget):
         layout.addWidget(self.answer_button)
 
         self.setLayout(layout)
-        self.setWindowTitle("Quiz Timer")
 
         # Timer
         self.timer = QTimer()
